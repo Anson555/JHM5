@@ -10,15 +10,8 @@ def helper_turn_teams_into_competitors(teams: list[tuple[str, list[tuple[str, bo
             competitors.append((student[0], sch, student[1]))
     return competitors
 
-def helper_turn_input_into_bool(user_input: str, T: str = "y", F: str = "n", case_sensitive = False) -> bool:
-    if (case_sensitive == False):
-        T = T.lower()
-        F = F.lower()
-        user_input = user_input.lower()
-    if (user_input == T):
-        return True
     if (user_input == F):
-        return False
+        return Fals
     print("--警告: 輸入不符合T/F")
     raise ValueError("輸入不符合T/F")
 
