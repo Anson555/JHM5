@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE Score Calculator (2024 DSE)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        h1 {
+            text-align: center;
+            color: #d32f2f;
+        }
+        .subject-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #d32f2f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background-color: #b71c1c;
+            transform: scale(1.03);
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            color: #4caf50;
+        }
+        #admission-probability {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .probability-high {
+            color: #4caf50;
+        }
+        .probability-moderate {
+            color: #ff9800;
+        }
+        .probability-low {
+            color: #d32f2f;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        @media (max-width: 400px) {
+            .container {
+                padding: 15px;
+            }
+            select, button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HKDSE Score Calculator (2024 DSE)</h1>
+        <p>This calculator estimates your 2024 HKDSE JUPAS score and university admission probability. Enter your levels for core and elective subjects. The total score is based on the best 6 subjects (4 core + 2 electives). Minimum admission requires 332A (Level 3 in Chinese and English, Level 2 in Math, Attained in CSD) plus Level 3 in two electives.</p>
+        
+        <div class="subject-group">
+            <label>Chinese Language:</label>
+            <select id="chinese">
+                <option value="0">Unclassified</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>English Language:</label>
+            <select id="english">
+                <option value="0">Unclassified</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>Mathematics (Compulsory Part):</label>
+            <select id="math">
+                <option value="0">Unclassified</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>Citizenship and Social Development (CSD):</label>
+            <select id="csd">
+                <option value="0">Not Attained</option>
+                <option value="2">Attained</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>Elective 1:</label>
+            <select id="elective1">
+                <option value="0">None</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>Elective 2:</label>
+            <select id="elective2">
+                <option value="0">None</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>Elective 3 (Optional):</label>
+            <select id="elective3">
+                <option value="0">None</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <div class="subject-group">
+            <label>M1/M2 (Extended Mathematics, Optional):</label>
+            <select id="m1m2">
+                <option value="0">None</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">5*</option>
+                <option value="7">5**</option>
+            </select>
+        </div>
+        
+        <button id="calculate-btn" disabled onclick="calculateScore()">Calculate Score</button>
+        
+        <div id="result"></div>
+        <div id="admission-probability"></div>
+    </div>
+    
+    <footer>
+        © 2024 HKDSE Score Calculator | Based on 2024 DSE Grading System (Category A: 5*=7, 5=6, 5=5, 4=4, 3=3, 2=2, 1=1; CSD: Attained=2)
+    </footer>
+    
+    <script>
+        // Enable/disable calculate button based on core subject selections
+        window.addEventListener('load', () => {
+            const coreSubjects = ['chinese', 'english', 'math', 'csd'];
+            coreSubjects.forEach(id => {
+                document.getElementById(id).addEventListener('change', toggleCalculateButton);
+            });
+            toggleCalculateButton();
+        });
+
+        function toggleCalculateButton() {
+            const levels = {
+                chinese: parseInt(document.getElementById('chinese').value) || 0,
+                english: parseInt(document.getElementById('english').value) || 0,
+                math: parseInt(document.getElementById('math').value) || 0,
+                csd: parseInt(document.getElementById('csd').value) || 0
+            };
+            const calculateBtn = document.getElementById('calculate-btn');
+            calculateBtn.disabled = !(levels.chinese >= 3 && levels.english >= 3 && levels.math >= 2 && levels.csd >= 2);
+        }
+
+        function calculateScore() {
+            const levels = {
+                chinese: parseInt(document.getElementById('chinese').value) || 0,
+                english: parseInt(document.getElementById('english').value) || 0,
+                math: parseInt(document.getElementById('math').value) || 0,
+                csd: parseInt(document.getElementById('csd').value) || 0,
+                elective1: parseInt(document.getElementById('elective1').value) || 0,
+                elective2: parseInt(document.getElementById('elective2').value) || 0,
+                elective3: parseInt(document.getElementById('elective3').value) || 0,
+                m1m2: parseInt(document.getElementById('m1m2').value) || 0
+            };
+
+            // Core subjects
+            const core = [levels.chinese, levels.english, levels.math, levels.csd].filter(score => score > 0);
+
+            // Electives
+            const electives = [levels.elective1, levels.elective2, levels.elective3, levels.m1m2].filter(score => score > 0);
+
+            // All scores
+            const allScores = [...core, ...electives];
+
+            // Sort descending and take top 6
+            allScores.sort((a, b) => b - a);
+            const top6 = allScores.slice(0, 6);
+            const totalScore = top6.reduce((sum, score) => sum + score, 0);
+
+            // Check minimum admission requirements (332A for core + Level 3 for 2 electives)
+            const meetsCore = levels.chinese >= 3 && levels.english >= 3 && levels.math >= 2 && levels.csd >= 2;
+            const electiveCount = electives.filter(score => score >= 3).length;
+            const meetsElectives = electiveCount >= 2;
+            const meetsAdmission = meetsCore && meetsElectives;
+
+            // Estimate admission probability
+            let probabilityText = '';
+            let probabilityClass = '';
+            let probabilityPercent = 0;
+
+            if (!meetsAdmission) {
+                probabilityText = 'Low probability of admission. You do not meet the minimum requirements. ';
+                probabilityClass = 'probability-low';
+                probabilityPercent = 5;
+                let reasons = [];
+                if (levels.chinese < 3) reasons.push("Chinese Language must be at least Level 3.");
+                if (levels.english < 3) reasons.push("English Language must be at least Level 3.");
+                if (levels.math < 2) reasons.push("Mathematics must be at least Level 2.");
+                if (levels.csd < 2) reasons.push("Citizenship and Social Development must be Attained.");
+                if (electiveCount < 2) reasons.push("You need at least two electives at Level 3 or above.");
+                probabilityText += reasons.join(" ");
+            } else {
+                if (totalScore >= 36) {
+                    probabilityText = 'Very high probability of admission. Your score is competitive for top programs (e.g., Medicine, Law).';
+                    probabilityClass = 'probability-high';
+                    probabilityPercent = 90;
+                } else if (totalScore >= 29) {
+                    probabilityText = 'High probability of admission. Your score is competitive for most university programs.';
+                    probabilityClass = 'probability-high';
+                    probabilityPercent = 70;
+                } else if (totalScore >= 20) {
+                    probabilityText = 'Moderate probability of admission. Your score meets minimum requirements but may be competitive only for less selective programs.';
+                    probabilityClass = 'probability-moderate';
+                    probabilityPercent = 50;
+                } else {
+                    probabilityText = 'Low probability of admission. Your score meets minimum requirements but is below typical cutoffs for most programs.';
+                    probabilityClass = 'probability-low';
+                    probabilityPercent = 20;
+                }
+            }
+
+            // Display results
+            document.getElementById('result').innerHTML = `
+                <p><strong>Total JUPAS Score (Best 6 Subjects):</strong> ${totalScore}</p>
+                <p>Note: Based on 2024 HKDSE grading (5*=7, 5=6, 5=5, 4=4, 3=3, 2=2, 1=1; CSD: Attained=2). Competitive programs often require 35+.</p>
+            `;
+            document.getElementById('admission-probability').innerHTML = `
+                <p class="${probabilityClass}"><strong>Admission Probability:</strong> ~${probabilityPercent}%</p>
+                <p>${probabilityText}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

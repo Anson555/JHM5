@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Rush</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        .section {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .active {
+            display: block;
+        }
+        nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        nav button:hover {
+            background-color: #45a049;
+        }
+        #question {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .option {
+            background-color: #eee;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            width: 40%;
+            text-align: center;
+        }
+        .option:hover {
+            background-color: #ddd;
+            transform: scale(1.05);
+        }
+        #score-timer {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        #feedback {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .correct {
+            animation: flash-green 0.5s;
+        }
+        .wrong {
+            animation: flash-red 0.5s;
+        }
+        @keyframes flash-green {
+            0% { background-color: green; color: white; }
+            100% { background-color: #eee; color: black; }
+        }
+        @keyframes flash-red {
+            0% { background-color: red; color: white; }
+            100% { background-color: #eee; color: black; }
+        }
+        select {
+            padding: 10px;
+            margin: 10px;
+        }
+        @media (max-width: 600px) {
+            .option {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>數學反應挑戰</h1>
+    </header>
+    <nav>
+        <button onclick="showSection('menu')">主菜單</button>
+        <button onclick="showSection('instructions')">遊戲說明</button>
+        <button onclick="showSection('about')">關於我們</button>
+    </nav>
+    <main>
+        <div id="menu" class="section active">
+            <h2>選擇遊戲模式</h2>
+            <label>運算類型:</label>
+            <select id="op-type">
+                <option value="mixed">混合運算</option>
+                <option value="add">只加法</option>
+                <option value="sub">只減法</option>
+                <option value="mul">只乘法</option>
+                <option value="div">只除法</option>
+            </select>
+            <br>
+            <label>難度等級:</label>
+            <select id="difficulty">
+                <option value="easy">簡單</option>
+                <option value="medium">中等</option>
+                <option value="hard">困難</option>
+            </select>
+            <br>
+            <button onclick="startGame()">開始遊戲</button>
+        </div>
+        <div id="game" class="section">
+            <div id="score-timer">
+                <span id="score">分數: 0</span>
+                <span id="timer">時間: 10</span>
+            </div>
+            <div id="question"></div>
+            <div id="options"></div>
+            <div id="feedback"></div>
+        </div>
+        <div id="end" class="section">
+            <h2>遊戲結束！</h2>
+            <p id="congrats"></p>
+            <p id="final-score"></p>
+            <p id="total-questions"></p>
+            <p id="accuracy"></p>
+            <p id="avg-time"></p>
+            <button onclick="restartGame()">重新開始</button>
+        </div>
+        <div id="instructions" class="section">
+            <h2>遊戲說明</h2>
+            <p>這是數學反應挑戰遊戲。您需要快速回答隨機生成的數學題目。</p>
+            <p>選擇正確答案以獲得分數。每道題目有時間限制。</p>
+            <p>遊戲將進行10道題目，結束後顯示您的成績。</p>
+        </div>
+        <div id="about" class="section">
+            <h2>關於我們</h2>
+            <p>開發者: xAI Team</p>
+            <p>遊戲任務: 幫助玩家提升數學反應速度和準確率。</p>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 Math Rush. All rights reserved.
+    </footer>
+    <script>
+        let currentSection = 'menu';
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            currentSection = section;
+        }
+
+        let score = 0;
+        let correctCount = 0;
+        let totalQuestions = 0;
+        let reactionTimes = [];
+        let currentAnswer;
+        let timerInterval;
+        let remainingTime;
+        let maxTime;
+        let opType;
+        let diffLevel;
+        const totalQ = 10;
+
+        function startGame() {
+            score = 0;
+            correctCount = 0;
+            totalQuestions = 0;
+            reactionTimes = [];
+            opType = document.getElementById('op-type').value;
+            diffLevel = document.getElementById('difficulty').value;
+            showSection('game');
+            nextQuestion();
+        }
+
+        function restartGame() {
+            showSection('menu');
+        }
+
+        function getNumberRange() {
+            if (diffLevel === 'easy') return {min: 1, max: 10};
+            if (diffLevel === 'medium') return {min: 1, max: 50};
+            return {min: 1, max: 100};
+        }
+
+        function getTimeLimit() {
+            if (diffLevel === 'easy') return 15;
+            if (diffLevel === 'medium') return 10;
+            return 5;
+        }
+
+        function generateQuestion() {
+            const range = getNumberRange();
+            let a = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+            let b = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+            let op;
+            if (opType === 'mixed') {
+                const ops = ['add', 'sub', 'mul', 'div'];
+                op = ops[Math.floor(Math.random() * ops.length)];
+            } else {
+                op = opType;
+            }
+            if (op === 'sub' && a < b) [a, b] = [b, a];
+            if (op === 'div') {
+                b = Math.floor(Math.random() * 9) + 1;
+                a = b * Math.floor(Math.random() * (range.max / b)) + b;
+            }
+            let question, answer;
+            switch (op) {
+                case 'add':
+                    question = `${a} + ${b}`;
+                    answer = a + b;
+                    break;
+                case 'sub':
+                    question = `${a} - ${b}`;
+                    answer = a - b;
+                    break;
+                case 'mul':
+                    question = `${a} × ${b}`;
+                    answer = a * b;
+                    break;
+                case 'div':
+                    question = `${a} ÷ ${b}`;
+                    answer = a / b;
+                    break;
+            }
+            return {question, answer};
+        }
+
+        function generateOptions(answer) {
+            const options = [answer];
+            while (options.length < 4) {
+                const wrong = answer + Math.floor(Math.random() * 10) - 5;
+                if (wrong !== answer && !options.includes(wrong)) options.push(wrong);
+            }
+            options.sort(() => Math.random() - 0.5);
+            return options;
+        }
+
+        function nextQuestion() {
+            if (totalQuestions >= totalQ) {
+                endGame();
+                return;
+            }
+            const {question, answer} = generateQuestion();
+            currentAnswer = answer;
+            document.getElementById('question').innerText = question;
+            const options = generateOptions(answer);
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.classList.add('option');
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsDiv.appendChild(btn);
+            });
+            maxTime = getTimeLimit();
+            remainingTime = maxTime;
+            document.getElementById('timer').innerText = `時間: ${remainingTime}`;
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                document.getElementById('timer').innerText = `時間: ${remainingTime}`;
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    handleWrong();
+                }
+            }, 1000);
+            totalQuestions++;
+        }
+
+        function checkAnswer(selected) {
+            clearInterval(timerInterval);
+            const timeUsed = maxTime - remainingTime;
+            reactionTimes.push(timeUsed);
+            if (selected === currentAnswer) {
+                score += 10;
+                correctCount++;
+                showFeedback('正確！', 'correct');
+            } else {
+                showFeedback('錯誤！', 'wrong');
+            }
+            updateScore();
+            setTimeout(nextQuestion, 1000);
+        }
+
+        function handleWrong() {
+            reactionTimes.push(maxTime);
+            showFeedback('時間到！', 'wrong');
+            updateScore();
+            setTimeout(nextQuestion, 1000);
+        }
+
+        function showFeedback(msg, className) {
+            const fb = document.getElementById('feedback');
+            fb.innerText = msg;
+            fb.className = className;
+            setTimeout(() => fb.innerText = '', 1000);
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = `分數: ${score}`;
+        }
+
+        function endGame() {
+            showSection('end');
+            const accuracy = (correctCount / totalQ * 100).toFixed(2);
+            const avgTime = (reactionTimes.reduce((a, b) => a + b, 0) / totalQ).toFixed(2);
+            document.getElementById('congrats').innerText = '恭喜您完成遊戲！';
+            document.getElementById('final-score').innerText = `總分: ${score}`;
+            document.getElementById('total-questions').innerText = `答題數量: ${totalQ}`;
+            document.getElementById('accuracy').innerText = `正確率: ${accuracy}%`;
+            document.getElementById('avg-time').innerText = `平均反應時間: ${avgTime} 秒`;
+        }
+    </script>
+</body>
+</html>
